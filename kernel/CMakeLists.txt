@@ -11,9 +11,14 @@ set_property(CACHE KERNEL_PLATFORM PROPERTY STRINGS pc64)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/platform/${KERNEL_PLATFORM})
 
 add_executable(kernel
+    src/c/stack_guard.c
     src/init.cpp
+    src/runtime/log.cpp
+    src/c/printf.cpp
 )
 
+target_include_directories(kernel PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_include_directories(kernel PRIVATE ${ARCH_INCLUDE_DIR})
 target_include_directories(kernel PRIVATE ${PLATFORM_INCLUDE_DIR})
 target_include_directories(kernel PRIVATE src)
 

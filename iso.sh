@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 rm -rf $OUT/iso_root
 mkdir -p $OUT/iso_root

@@ -1,8 +1,15 @@
 add_library(kernel_platform_pc64 OBJECT
     src/boot.cpp
+    src/io/serial.cpp
+    src/time/cmos.cpp
 )
 
+target_include_directories(kernel_platform_pc64 PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../src)
+target_include_directories(kernel_platform_pc64 PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include)
+target_include_directories(kernel_platform_pc64 PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
 target_include_directories(kernel_platform_pc64 PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_include_directories(kernel_platform_pc64 PRIVATE ${ARCH_INCLUDE_DIR})
 
 target_compile_options(kernel_platform_pc64 PRIVATE ${KERNEL_COMPILE_OPTS} ${ARCH_COMPILE_OPTS})
 

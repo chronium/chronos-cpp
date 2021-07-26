@@ -2,6 +2,7 @@ limine
 
 build
 iso_root
+sysroot
 
 *.elf
 *.iso

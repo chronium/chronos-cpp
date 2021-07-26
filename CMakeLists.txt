@@ -42,6 +42,7 @@ add_custom_target(image
 )
 
 add_custom_target(run
+    DEPENDS image
     COMMAND ${CMAKE_COMMAND} -E env "IMAGE=${DISK_IMAGE}" "BASE=${CMAKE_SOURCE_DIR}" "HOST=${KERNEL_ARCH}" ${CMAKE_SOURCE_DIR}/qemu.sh
     USES_TERMINAL
 )

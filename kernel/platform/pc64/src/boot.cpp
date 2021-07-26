@@ -2,6 +2,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "io/serial.h"
+
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
 static uint8_t stack[4096];
@@ -92,6 +94,10 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
 
 typedef void (*term_write)(const char *string, size_t length);
 
+void platform_init();
+
+void kinit();
+
 // The following will be our kernel's entry point.
 extern "C" void _start(struct stivale2_struct *stivale2_struct) {
   // Let's get the terminal structure tag from the bootloader.
@@ -119,8 +125,14 @@ extern "C" void _start(struct stivale2_struct *stivale2_struct) {
   // a simple "Hello World" to screen.
   tw("Hello World", 11);
 
+  platform_init();
+
+  kinit();
+
   // We're done, just hang...
   for (;;) {
     asm("hlt");
   }
 }
+
+void platform_init() { platform::Serial::Init(); }
