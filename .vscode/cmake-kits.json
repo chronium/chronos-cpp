@@ -1,0 +1,6 @@
+[
+    {
+        "name": "Chronos",
+        "toolchainFile": "/home/chronium/chronos/cmake/toolchain-amd64-clang.cmake"
+    }
+]

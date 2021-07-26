@@ -1,0 +1,14 @@
+if(CHRONOS)
+    return()
+endif()
+
+set(CHRONOS 1)
+
+set(CMAKE_DL_LIBS "")
+
+set(CMAKE_C_COMPILE_OPTIONS_PIC "-fPIC")
+set(CMAKE_C_COMPILE_OPTIONS_PIE "-fPIE")
+set(CMAKE_C_LINK_OPTIONS_PIE ${CMAKE_C_COMPILE_OPTIONS_PIE} "-pie")
+set(CMAKE_C_LINK_OPTIONS_NO_PIE "-no-pie")
+
+
