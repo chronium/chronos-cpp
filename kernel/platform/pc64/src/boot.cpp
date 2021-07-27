@@ -1,10 +1,21 @@
+#include <debug/FramebufferConsole.h>
 #include <platform/stivale2.h>
+#include <printf.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "io/serial.h"
 
 #include <log.h>
+
+namespace platform {
+/// shared framebuffer console
+static u8 gSharedConsole[sizeof(debug::FramebufferConsole)];
+debug::FramebufferConsole *gConsole = nullptr;
+}; // namespace platform
+
+using namespace platform;
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
@@ -96,8 +107,12 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
 
 typedef void (*term_write)(const char *string, size_t length);
 
-void platform_init();
+void platform_init(struct stivale2_struct_tag_framebuffer *framebuffer);
 void arch_init();
+
+void PrintBootMessage();
+
+void init_framebuffer(struct stivale2_struct_tag_framebuffer *framebuffer);
 
 void kinit();
 
@@ -119,7 +134,7 @@ extern "C" void _start(struct stivale2_struct *stivale2_struct) {
   // matches the prototype described in the stivale2 specification for
   // the stivale2_term_write function.
 
-  platform_init();
+  platform_init(framebuffer);
   arch_init();
 
   kinit();
@@ -130,4 +145,64 @@ extern "C" void _start(struct stivale2_struct *stivale2_struct) {
   }
 }
 
-void platform_init() { platform::Serial::Init(); }
+void platform_init(struct stivale2_struct_tag_framebuffer *framebuffer) {
+  Serial::Init();
+
+  init_framebuffer(framebuffer);
+
+  PrintBootMessage();
+}
+
+inline void *operator new(size_t, void *p) throw() { return p; }
+
+void init_framebuffer(struct stivale2_struct_tag_framebuffer *framebuffer) {
+  using namespace debug;
+  using ColorOrder = FramebufferConsole::ColorOrder;
+
+  auto w = framebuffer->framebuffer_width;
+  auto h = framebuffer->framebuffer_height;
+  auto addr = framebuffer->framebuffer_addr;
+
+  memclr(gSharedConsole, sizeof(FramebufferConsole));
+
+  gConsole = new (gSharedConsole)
+      FramebufferConsole(reinterpret_cast<u32 *>(addr), ColorOrder::ARGB, w, h,
+                         framebuffer->framebuffer_pitch);
+}
+
+void PrintBootMessage() {
+  int nChars;
+  char buf[100]{0};
+
+  constexpr static const size_t kInfoBoxWidth{50};
+
+  nChars = snprintf(buf, sizeof(buf),
+                    "\n\nChronOS (built on %s) - "
+                    "Copyright 2021 Chronium\n\n",
+                    __DATE__);
+  gConsole->write(buf, nChars);
+
+  // top info box
+  gConsole->write(" \x05", 2);
+  for (size_t i = 0; i < kInfoBoxWidth; i++) {
+    gConsole->write(0x01);
+  }
+  gConsole->write("\x06\n", 2);
+
+  // CPUs (TODO: use the actual number of started cores)
+  gConsole->write(" \x00", 2);
+  nChars = snprintf(buf, sizeof(buf), "Willkommen zu ChronOS");
+  gConsole->write(buf, nChars);
+
+  for (size_t i = nChars; i < kInfoBoxWidth; i++) {
+    gConsole->write(' ');
+  }
+  gConsole->write("\x00\n", 2);
+
+  // bottom info box
+  gConsole->write(" \x04", 2);
+  for (size_t i = 0; i < kInfoBoxWidth; i++) {
+    gConsole->write(0x01);
+  }
+  gConsole->write("\x03\n", 2);
+}

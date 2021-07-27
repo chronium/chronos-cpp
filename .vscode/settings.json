@@ -1,7 +1,7 @@
 {
-    "C_Cpp.errorSquiggles": "Disabled",
-    "files.associations": {
-        "type_traits": "cpp",
-        "*.h": "cpp"
-    },
+  "C_Cpp.errorSquiggles": "Disabled",
+  "files.associations": {
+    "type_traits": "cpp",
+    "*.h": "cpp"
+  },
 }

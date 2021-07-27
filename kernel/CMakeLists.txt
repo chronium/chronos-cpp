@@ -12,6 +12,8 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/platform/${KERNEL_PLATFORM})
 
 add_executable(kernel
     src/init.cpp
+    src/debug/BitmapFonts.cpp
+    src/debug/FramebufferConsole.cpp
     src/runtime/log.cpp
     src/c/stack_guard.c
     src/c/printf.cpp
