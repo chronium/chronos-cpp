@@ -11,10 +11,11 @@ set_property(CACHE KERNEL_PLATFORM PROPERTY STRINGS pc64)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/platform/${KERNEL_PLATFORM})
 
 add_executable(kernel
-    src/c/stack_guard.c
     src/init.cpp
     src/runtime/log.cpp
+    src/c/stack_guard.c
     src/c/printf.cpp
+    src/c/string.cpp
 )
 
 target_include_directories(kernel PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
@@ -23,6 +24,7 @@ target_include_directories(kernel PRIVATE ${PLATFORM_INCLUDE_DIR})
 target_include_directories(kernel PRIVATE src)
 
 target_link_options(kernel PRIVATE -nostartfiles)
+target_link_libraries(kernel PRIVATE ${ARCH_TARGET_NAME})
 target_link_libraries(kernel PRIVATE ${PLATFORM_TARGET_NAME})
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

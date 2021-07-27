@@ -1,5 +1,7 @@
 add_library(kernel_arch_amd64 OBJECT
     src/init.cpp
+    src/gdt.S
+    src/gdt.cpp
 )
 
 set(ARCH_COMPILE_OPTS -mcmodel=kernel -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -fno-omit-frame-pointer CACHE STRING "Architecture specific compile flags")

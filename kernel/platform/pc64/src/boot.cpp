@@ -4,6 +4,8 @@
 
 #include "io/serial.h"
 
+#include <log.h>
+
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
 static uint8_t stack[4096];
@@ -95,18 +97,16 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
 typedef void (*term_write)(const char *string, size_t length);
 
 void platform_init();
+void arch_init();
 
 void kinit();
 
 // The following will be our kernel's entry point.
 extern "C" void _start(struct stivale2_struct *stivale2_struct) {
-  // Let's get the terminal structure tag from the bootloader.
-  struct stivale2_struct_tag_terminal *term_str_tag;
-  term_str_tag = static_cast<stivale2_struct_tag_terminal *>(
-      stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_TERMINAL_ID));
-
-  // Check if the tag was actually found.
-  if (term_str_tag == NULL) {
+  struct stivale2_struct_tag_framebuffer *framebuffer;
+  framebuffer = static_cast<stivale2_struct_tag_framebuffer *>(
+      stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID));
+  if (framebuffer == NULL) {
     // It wasn't found, just hang...
     for (;;) {
       asm("hlt");
@@ -114,18 +114,13 @@ extern "C" void _start(struct stivale2_struct *stivale2_struct) {
   }
 
   // Let's get the address of the terminal write function.
-  void *term_write_ptr = (void *)term_str_tag->term_write;
 
   // Now, let's assign this pointer to a function pointer which
   // matches the prototype described in the stivale2 specification for
   // the stivale2_term_write function.
-  auto tw = (term_write)term_write_ptr;
-
-  // We should now be able to call the above function pointer to print out
-  // a simple "Hello World" to screen.
-  tw("Hello World", 11);
 
   platform_init();
+  arch_init();
 
   kinit();
 
