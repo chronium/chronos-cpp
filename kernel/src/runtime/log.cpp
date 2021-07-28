@@ -4,16 +4,27 @@
 
 #include <arch/spinlock.h>
 
+#include "debug/FramebufferConsole.h"
+
+namespace platform {
+extern debug::FramebufferConsole *gConsole;
+};
+
 DECLARE_SPINLOCK_S(gPanicLock);
 
-static void _outchar(char ch, void *ctx) { platform_debug_spew(ch); }
-static void _outchar_panic(char ch, void *ctx) {
-  platform_debug_spew(ch);
+static void _outchar_serial(char ch, void *ctx) { platform_debug_spew(ch); }
 
-  // TODO
-  /*if(gConsole) {
-      gConsole->write(ch);
-  }*/
+static void _outchar_console(char ch, void *ctx) {
+  using namespace platform;
+
+  if (gConsole) {
+    gConsole->write(ch);
+  }
+}
+
+static void _outchar_both(char ch, void *ctx) {
+  _outchar_serial(ch, ctx);
+  _outchar_console(ch, ctx);
 }
 
 void log(const char *format, ...) {
@@ -25,12 +36,25 @@ void log(const char *format, ...) {
   auto minutes = (time & 0xFF00) >> 8;
   auto hours = (time & 0xFF0000) >> 16;
 
-  fctprintf(_outchar, NULL, "[%2u:%2u:%2u] ", hours, minutes, seconds);
-  fctvprintf(_outchar, NULL, format, va);
+  auto disc = format[0];
+
+  auto &func = disc == SERIAL[0] || disc == CSERIAL[0]       ? _outchar_serial
+               : disc == TERMINAL[0] || disc == CTERMINAL[0] ? _outchar_console
+               : disc == BOTH[0] || disc == CBOTH[0]         ? _outchar_both
+                                                             : _outchar_serial;
+
+  if (disc != CSERIAL[0] && disc != CTERMINAL[0] && disc != CBOTH[0])
+    fctprintf(func, NULL, "[%2u:%2u:%2u] ", hours, minutes, seconds);
+
+  if (disc == SERIAL[0] || disc == CSERIAL[0] || disc == TERMINAL[0] ||
+      disc == CTERMINAL[0] || disc == BOTH[0] || disc == CBOTH[0])
+    fctvprintf(func, NULL, &format[1], va);
+  else
+    fctvprintf(func, NULL, format, va);
+
+  func('\n', nullptr);
 
   va_end(va);
-
-  platform_debug_spew('\n');
 }
 
 void panic(const char *format, ...) {
@@ -49,7 +73,7 @@ void panic(const char *format, ...) {
 
   va_end(va);
 
-  fctprintf(_outchar_panic, 0, "\033[41mpanic: %s\npc: $%p\033[0m\n", panicBuf,
+  fctprintf(_outchar_both, 0, "\033[41mpanic: %s\npc: $%p\033[0m\n", panicBuf,
             pc);
 
   for (;;)

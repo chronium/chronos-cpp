@@ -1,7 +1,7 @@
 add_library(kernel_platform_pc64 OBJECT
     src/boot.cpp
-    src/platform.cpp
     src/io/serial.cpp
+    src/platform.cpp
     src/time/cmos.cpp
 )
 

@@ -11,13 +11,13 @@ set_property(CACHE KERNEL_PLATFORM PROPERTY STRINGS pc64)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/platform/${KERNEL_PLATFORM})
 
 add_executable(kernel
-    src/init.cpp
+    src/c/printf.cpp
+    src/c/stack_guard.c
+    src/c/string.cpp
     src/debug/BitmapFonts.cpp
     src/debug/FramebufferConsole.cpp
+    src/init.cpp
     src/runtime/log.cpp
-    src/c/stack_guard.c
-    src/c/printf.cpp
-    src/c/string.cpp
 )
 
 target_include_directories(kernel PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)

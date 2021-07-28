@@ -84,9 +84,10 @@ extern "C" void _start(struct stivale2_struct *stivale2_struct) {
       .AvailableMemory = memSize,
   };
 
-  PlatformInit(&boot_info);
-
+  Serial::Init();
   arch_init();
+
+  PlatformInit(&boot_info);
 
   kinit();
 

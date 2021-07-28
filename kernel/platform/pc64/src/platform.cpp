@@ -4,17 +4,15 @@
 #include <debug/FramebufferConsole.h>
 #include <int.h>
 #include <log.h>
+#include <new>
 #include <printf.h>
 #include <string.h>
-
-inline void *operator new(size_t, void *p) throw() { return p; }
 
 namespace platform {
 static u8 gSharedConsole[sizeof(debug::FramebufferConsole)];
 debug::FramebufferConsole *gConsole = nullptr;
 
 void PlatformInit(boot_info_t *info) {
-  Serial::Init();
   log("Serial initialized");
 
   FramebufferInit(info);
